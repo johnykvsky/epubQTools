@@ -5,14 +5,14 @@
 # Copyright © Robert Błaut. See NOTICE for more information.
 #
 
-from __future__ import print_function
+
 
 __license__ = 'GNU Affero GPL v3'
 __copyright__ = '2014, Robert Błaut listy@blaut.biz'
-__appname__ = u'epubQTools'
+__appname__ = 'epubQTools'
 numeric_version = (0, 8)
-__version__ = u'.'.join(map(unicode, numeric_version))
-__author__ = u'Robert Błaut <listy@blaut.biz>'
+__version__ = '.'.join(map(str, numeric_version))
+__author__ = 'Robert Błaut <listy@blaut.biz>'
 
 import argparse
 import codecs
@@ -33,9 +33,9 @@ from lib.azkfix import to_azk
 
 SFENC = sys.getfilesystemencoding()
 
-if sys.platform == "win32":
-    from lib.win_utf8_console import fix_broken_win_console
-    fix_broken_win_console()
+#if sys.platform == "win32":
+#    from lib.win_utf8_console import fix_broken_win_console
+#    fix_broken_win_console()
 
 if not hasattr(sys, 'frozen'):
     q_cwd = os.path.join(os.getcwd(), os.path.dirname(__file__))
@@ -145,7 +145,7 @@ parser.add_argument('--book-margin', nargs='?', metavar='NUMBER',
                     help='Add left and right book margin to reset CSS file '
                     '(only with -e)')
 args = parser.parse_args()
-uni_dir = args.directory.decode('utf-8')
+uni_dir = args.directory
 
 
 class Logger(object):
@@ -158,6 +158,8 @@ class Logger(object):
         if sys.platform == 'win32':
             message = message.replace('\n', '\r\n')
         self.log.write(message)
+    def flush(self):
+        pass
 
 
 def main():
@@ -248,7 +250,7 @@ def main():
                         counter += 1
                         try:
                             epbzf = zipfile.ZipFile(os.path.join(root, f))
-                        except zipfile.BadZipfile, e:
+                        except zipfile.BadZipfile as e:
                             print('! CRITICAL! Problem with file "%s": %s' % (
                                 f, str(e).decode(SFENC)))
                         opf_root, opf_path = find_opf(epbzf)
@@ -288,15 +290,32 @@ def main():
 
     if args.epubcheck:
 
-        def epubchecker(echp_temp, root, f, epubcheckstr, epubcheckjar):
+        def epubchecker_version(echp_temp, epubcheckjar):
             epubchecker_path = os.path.join(
                 echp_temp,
-                epubcheckstr, epubcheckjar
+                epubcheckjar
             )
             jp = subprocess.Popen([
                 'java', '-Djava.awt.headless=true', '-jar',
-                '%s' % epubchecker_path.encode(SFENC),
-                '%s' % os.path.join(root, f).encode(SFENC)
+                '%s' % epubchecker_path,
+                'missing_file',
+                '--version'
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            jpout, jperr = jp.communicate()
+            if jperr:
+                print('epubcheck error: '+jperr.decode(SFENC))
+            else:
+                print('epubcheck version: '+jpout.decode(SFENC))
+
+        def epubchecker(echp_temp, root, f, epubcheckstr, epubcheckjar):
+            epubchecker_path = os.path.join(
+                echp_temp,
+                epubcheckjar
+            )
+            jp = subprocess.Popen([
+                'java', '-Djava.awt.headless=true', '-jar',
+                '%s' % epubchecker_path,
+                '%s' % os.path.join(root, f)
             ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             jpout, jperr = jp.communicate()
             if jperr:
@@ -304,20 +323,22 @@ def main():
                 print('*** Details... ***')
                 print(jperr.decode(SFENC))
             else:
+                print('Result: '+jpout.decode(SFENC))
                 print(f + ': OK!')
                 print('')
 
-        for e in os.listdir(os.path.join(args.tools)):
-            if e.startswith('epubcheck-4.'):
-                epubcheckstr = os.path.splitext(e)[0]
-                break
-            else:
-                epubcheckstr = ''
+        #for e in os.listdir(os.path.join(args.tools)):
+        #    if e.startswith('epubcheck-4.'):
+        #        epubcheckstr = os.path.splitext(e)[0]
+        #        break
+        #    else:
+        #        epubcheckstr = ''     
+        epubcheckstr = os.path.join(args.tools)      
         epubcheckjar = 'epubcheck.jar'
 
         print('')
         print('***********************************************')
-        print('*** Checking with ' + epubcheckstr + ' tool ***')
+        print('*** Checking with EPUBCheck tool ***')
         print('***********************************************')
         try:
             subprocess.Popen(
@@ -326,14 +347,16 @@ def main():
             )
         except:
             sys.exit('Java is NOT installed. Giving up...')
-        try:
-            echpzipfile = zipfile.ZipFile(os.path.join(args.tools,
-                                          epubcheckstr + '.zip'))
-        except:
-            sys.exit(epubcheckstr + 'EpubCheck 4.x ZIP file not found '
-                     'in directory: "' + args.tools + '" Giving up...')
-        echp_temp = tempfile.mkdtemp(suffix='', prefix='quiris-tmp-')
-        echpzipfile.extractall(echp_temp)
+        #try:
+        #    echpzipfile = zipfile.ZipFile(os.path.join(args.tools,
+        #                                  epubcheckstr + '.zip'))
+        #except:
+        #    sys.exit(epubcheckstr + 'EpubCheck 4.x ZIP file not found '
+        #             'in directory: "' + args.tools + '" Giving up...')
+        #echp_temp = tempfile.mkdtemp(suffix='', prefix='quiris-tmp-', dir='./tmp')
+        #echpzipfile.extractall(echp_temp)
+        echp_temp = os.path.join(args.tools) #+'/'
+
         if args.mod:
             fe = '_moh.epub'
             nfe = '_org.epub'
@@ -341,6 +364,8 @@ def main():
             fe = '.epub'
             nfe = '_moh.epub'
         counter = 0
+
+        epubchecker_version(echp_temp, epubcheckjar)
 
         if ind_file:
             counter += 1
@@ -422,7 +447,7 @@ def main():
                     '-dont_append_source',
                     compression,
                     os.path.join(root, f).encode(SFENC)
-                ], stdout=subprocess.PIPE).communicate()[0]
+                ], stdout=subprocess.PIPE, encoding='utf8').communicate()[0]
             except OSError:
                 try:
                     proc = subprocess.Popen([

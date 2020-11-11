@@ -5,14 +5,14 @@
 # Copyright © Robert Błaut. See NOTICE for more information.
 #
 
-from __future__ import print_function
+
 import os
 import sys
 import re
 import shutil
 import logging
 from lib.epubqcheck import list_font_basic_properties
-from urllib import unquote
+from urllib.parse import unquote
 
 SFENC = sys.getfilesystemencoding()
 try:
@@ -36,7 +36,7 @@ cssutils.ser.prefs.omitLastSemicolon = False
 def clean_meta_tags(opftree):
 
     def clean_meta_tag(meta):
-        from HTMLParser import HTMLParser
+        from html.parser import HTMLParser
         h = HTMLParser()
         if meta.text is None:
             return None
@@ -64,7 +64,7 @@ def change_font_family_value(cssvalue, new_name):
 def fix_property(prop, old_name, new_name, is_url):
     changed = False
     ff = prop.propertyValue
-    for i in xrange(ff.length):
+    for i in range(ff.length):
         val = ff.item(i)
         if (hasattr(val.value, 'lower') and
                 val.value.lower() == old_name.lower()):
@@ -394,7 +394,7 @@ def rename_replace_files(opftree, ncxtree, epub_dir, old_name_path,
             fix_sheet(sheet, old_css_path, new_css_path, True)
 
             with open(os.path.join(epub_dir, c.get('href')), 'w') as f:
-                f.write(sheet.cssText)
+                f.write(sheet.cssText.decode('utf-8'))
 
     def update_opf(opftree, old_name_path, new_name_path):
         items = etree.XPath('//opf:item[@href]', namespaces=OPFNS)(opftree)
@@ -446,7 +446,7 @@ def most_common(lst):
 def write_file_changes_back(tree, file_path):
     with open(file_path, 'w') as f:
         f.write(etree.tostring(tree.getroot(), pretty_print=True,
-                standalone=False, xml_declaration=True, encoding='utf-8'))
+                standalone=False, xml_declaration=True, encoding='utf-8').decode('utf-8'))
 
 
 def rename_calibre_cover(opftree, ncxtree, epub_dir):
@@ -572,7 +572,7 @@ def beautify_book(root, f, user_font_dir, pair_family):
     opf_dir, opf_file, is_fixed = find_roots(tempdir)
     epub_dir = os.path.join(tempdir, opf_dir)
     opf_path = os.path.join(tempdir, opf_file)
-    parser = etree.XMLParser(remove_blank_text=True)
+    parser = etree.XMLParser(remove_blank_text=True, encoding='utf-8')
     opftree = etree.parse(opf_path, parser)
     ncxfile = etree.XPath(
         '//opf:item[@media-type="application/x-dtbncx+xml"]',

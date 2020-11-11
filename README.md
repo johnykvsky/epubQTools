@@ -1,12 +1,55 @@
-epubQTools [![Release](https://img.shields.io/github/release/quiris11/epubqtools.svg)](https://github.com/quiris11/epubqtools/releases/latest)
+epubQTools [![Release](https://img.shields.io/github/release/johnykvsky/epubqtools.svg)](https://github.com/johnykvsky/epubqtools/releases/latest)
 ==========
 
-Tools for checking, correcting and hyphenating EPUB files.
+Tools for checking, correcting and hyphenating EPUB files. Created by [quiris11][link-author] under GNU Affero General Public License. 
+
+This version was updated to work with Python v3.
+
+#### Changes in this version
+
+ - disclaimer: this version was tested only on linux, with latest epubcheck (4.2.4) and kindlegen (v2.9 build 1028-0897292 for Linux)
+ - it was updated to work with Python v3, at the moment it's 3.7
+ - it was slightly modified to work with unpacked epubcheck instead of extracting it on every run to /tmp directory
+ - it also shows epubcheck version (if it's used)
 
 #### External apps used by this tool available for download:
-* **kindlegen** (only unpacked binary is needed): http://www.amazon.com/kindleformat/kindlegen
-* **epubcheck-4.0.1.zip** (Java installed is required for run it): https://github.com/IDPF/epubcheck/releases
 
+* **kindlegen**: https://github.com/koenrh/docker-kindlegen/tree/master/kindlegen
+* **epubcheck-4.2.4.zip** (Java installed is required to run it): https://github.com/IDPF/epubcheck/releases
+
+#### Additional requirements:
+* python -m pip install lxml
+* python -m pip install cssutils
+
+#### Mini how-to
+
+ Download both external tools and put them in **tools** folder. Tools folder should contain:
+
+ - `kindlegen` file, marked as executable (from kindlegen_linux_2.6_i386_v2_9.tar.gz archive)
+ - `epubcheck.jar` file, marked as executable (from epubcheck-4.2.4.zip archive)
+ - `lib` directory with `*.jar` files (also from epubcheck-4.2.4.zip archive)
+
+ Create runnable zip file with epubQTools. Just zip all files in this repository. So it should contain (as is, not in any additional subfolder):
+ - `__main__.py`
+ - `lib` with all it's content
+
+ Then you can run. I run following script:
+
+ ```
+python3.7 epubQTools.zip ./epub -V
+python3.7 epubQTools.zip ./epub -n -l ./log --tools ./tools
+python3.7 epubQTools.zip ./epub -q -l ./log --tools ./tools
+python3.7 epubQTools.zip ./epub -e -l ./log --tools ./tools
+python3.7 epubQTools.zip ./epub -qm -l ./log --tools ./tools
+python3.7 epubQTools.zip ./epub -pm -l ./log --tools ./tools
+python3.7 epubQTools.zip ./epub -kd -l ./log --tools ./tools
+ ```
+
+Where `epub` folder contains `.epub` files I want to process, `log` folder store logs from file processing and `tools` folder contains tools (as mentioned before).
+
+But you don't have to create zip file, epubQTools ean be run like this (just point to `__main__.py` file): `python3.7 epubQTools/__main__.py -V`
+
+#### Documentation
 
 ```
 usage: epubQTools [-h] [-V] [--tools [DIR]] [-l [DIR]] [-i [NR]]
@@ -25,7 +68,7 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -V, --version         show program's version number and exit
-  --tools [DIR]         path to additional tools: kindlegen, epubcheck zip
+  --tools [DIR]         path to additional tools: kindlegen, epubcheck
   -l [DIR], --log [DIR]
                         path to directory to write log file. If DIR is omitted
                         write log to directory with epub files
@@ -76,17 +119,9 @@ optional arguments:
                         with -e)
 ```
 
-#### Additional requirements:
-* python -m pip install lxml
-* python -m pip install cssutils
-* python -m pip install pyinstaller (for compilation only)
+#### Tip
 
-#### Compilation tips for creating standalone applications with Pyinstaller tool:
-* build on Mac (with Python 2.7.x from Homebrew):
-```
-pyinstaller -Fn epubQTools ~/github/epubQTools/__main__.py
-```
-* build on Windows (with Python 2.7.x):
-```
-C:\Python27\Scripts\pyinstaller.exe -Fn epubQTools .\epubQTools\__main__.py
-```
+To read/check ebooks on linux use [foliate][link-foliate]
+
+[link-author]: https://github.com/quiris11/epubQTools
+[link-foliate]: https://johnfactotum.github.io/foliate/
