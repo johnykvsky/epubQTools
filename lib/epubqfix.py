@@ -51,7 +51,7 @@ else:
     ))
 MY_LANGUAGE = 'pl'
 MY_LANGUAGE2 = 'pl-PL'
-HYPHEN_MARK = '\\u00AD'
+HYPHEN_MARK = '\u00AD'
 
 HOME = os.path.expanduser("~")
 DTD = ('<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" '
@@ -1520,7 +1520,7 @@ def remove_wm_info(opftree, rootepubdir):
                 alltexts = wmtree.xpath('//xhtml:body//text()',
                                         namespaces=XHTMLNS)
                 alltext = ' '.join(alltexts)
-                alltext = alltext.replace('\\u00AD', '').strip()
+                alltext = alltext.replace('\u00AD', '').strip()
                 if (
                     alltext == 'Plik jest zabezpieczony znakiem wodnym' or
                     'Ten ebook jest chroniony znakiem wodnym' in alltext or
@@ -1566,18 +1566,18 @@ def process_xhtml_file(xhfile, opftree, _resetmargins, skip_hyph, opf_path,
     for key in list(entities.keys()):
         c = c.replace(key, entities[key])
     try:
-        xhtree = etree.fromstring(c.encode('utf-8'), parser=etree.XMLParser(recover=False))
+        xhtree = etree.fromstring(c.encode('utf-8'), parser=etree.XMLParser(recover=False, encoding='utf-8'))
     except etree.XMLSyntaxError as e:
         if ('XML declaration allowed only at the start of the '
                 'document' in str(e).decode(SFENC)):
             xhtree = etree.fromstring(c[c.find('<?xml'):],
-                                      parser=etree.XMLParser(recover=False))
+                                      parser=etree.XMLParser(recover=False, encoding='utf-8'))
         elif re.search('Opening and ending tag mismatch: body line \d+ and '
                        'html', str(e).decode(SFENC)):
             try:
                 xhtree = etree.fromstring(
                     c.replace('</html>', '</body></html>'),
-                    parser=etree.XMLParser(recover=False)
+                    parser=etree.XMLParser(recover=False, encoding='utf-8')
                 )
             except:
                 print('* File skipped: ' + os.path.basename(xhfile) +
@@ -1713,7 +1713,7 @@ def process_epub(_tempdir, _replacefonts, _resetmargins,
         except OSError:
             pass
 
-    parser = etree.XMLParser(remove_blank_text=True)
+    parser = etree.XMLParser(remove_blank_text=True, encoding='utf-8')
     try:
         opftree = etree.parse(opf_file_path_abs, parser)
     except (etree.XMLSyntaxError, IOError) as e:

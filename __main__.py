@@ -10,7 +10,7 @@
 __license__ = 'GNU Affero GPL v3'
 __copyright__ = '2014, Robert Błaut listy@blaut.biz'
 __appname__ = 'epubQTools'
-numeric_version = (0, 8)
+numeric_version = (0, 9)
 __version__ = '.'.join(map(str, numeric_version))
 __author__ = 'Robert Błaut <listy@blaut.biz>'
 
